@@ -1,0 +1,33 @@
+{
+  "masterCode": "AUR-MSTR-KEY-001",
+  "resources": [
+    {
+      "code": "REF-7X9Q-K2M4",
+      "type": "link",
+      "title": "Python Documentation",
+      "url": "https://docs.python.org",
+      "description": "Official Python documentation, tutorials, and guides.",
+      "notes": "Great reference for standard library.",
+      "createdAt": "2025-01-15",
+      "modifiedAt": "2025-01-15"
+    },
+    {
+      "code": "ARC-3M8P-W5L2",
+      "type": "note",
+      "title": "Project Architecture Notes",
+      "content": "Frontend: Vanilla JS\nBackend: None (static)\nDatabase: JSON file\nHosting: GitHub Pages\n\nKey decisions:\n- No frameworks, keep it lightweight\n- Client-side search via hash routing\n- Security through resource codes",
+      "createdAt": "2025-01-16",
+      "modifiedAt": "2025-01-16"
+    },
+    {
+      "code": "IDX-8T4N-Q7R1",
+      "type": "link",
+      "title": "GitHub Pages Docs",
+      "url": "https://docs.github.com/en/pages",
+      "description": "Official GitHub Pages documentation.",
+      "notes": "",
+      "createdAt": "2025-01-17",
+      "modifiedAt": "2025-01-17"
+    }
+  ]
+}

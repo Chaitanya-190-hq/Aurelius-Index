@@ -1,33 +1,66 @@
 {
-  "masterCode": "AUR-MSTR-KEY-001",
+  "masterCode": "NODE-MSTR-KEY-001",
   "resources": [
     {
-      "code": "REF-7X9Q-K2M4",
+      "code": "NODE-X7K2-9M1A",
       "type": "link",
       "title": "Python Documentation",
       "url": "https://docs.python.org",
-      "description": "Official Python documentation, tutorials, and guides.",
-      "notes": "Great reference for standard library.",
+      "description": "Official Python programming language documentation, tutorials, and reference guides.",
+      "notes": "Essential reference for standard library modules and language features.",
+      "category": "Development",
+      "tags": ["python", "docs", "reference"],
+      "favorite": true,
       "createdAt": "2025-01-15",
-      "modifiedAt": "2025-01-15"
+      "modifiedAt": "2025-01-20"
     },
     {
-      "code": "ARC-3M8P-W5L2",
+      "code": "NODE-T4P9-RK2V",
       "type": "note",
-      "title": "Project Architecture Notes",
-      "content": "Frontend: Vanilla JS\nBackend: None (static)\nDatabase: JSON file\nHosting: GitHub Pages\n\nKey decisions:\n- No frameworks, keep it lightweight\n- Client-side search via hash routing\n- Security through resource codes",
-      "createdAt": "2025-01-16",
-      "modifiedAt": "2025-01-16"
+      "title": "Architecture Decisions",
+      "content": "Static-first approach chosen for zero operational overhead.\n\nKey decisions:\n- JSON flat-file database\n- Client-side hash routing\n- Code-based access control\n- No build step required",
+      "category": "Notes",
+      "tags": ["architecture", "decisions", "design"],
+      "favorite": false,
+      "createdAt": "2025-01-18",
+      "modifiedAt": "2025-01-18"
     },
     {
-      "code": "IDX-8T4N-Q7R1",
+      "code": "NODE-Q7A2-MX8L",
       "type": "link",
-      "title": "GitHub Pages Docs",
+      "title": "GitHub Pages Documentation",
       "url": "https://docs.github.com/en/pages",
-      "description": "Official GitHub Pages documentation.",
-      "notes": "",
-      "createdAt": "2025-01-17",
-      "modifiedAt": "2025-01-17"
+      "description": "Official guide for deploying static sites with GitHub Pages.",
+      "notes": "Free hosting for static sites. Custom domain support available.",
+      "category": "Hosting",
+      "tags": ["github", "pages", "deployment"],
+      "favorite": true,
+      "createdAt": "2025-01-12",
+      "modifiedAt": "2025-01-19"
+    },
+    {
+      "code": "NODE-3M8P-W5L2",
+      "type": "note",
+      "title": "Research: Typography Systems",
+      "content": "Classical typography principles for digital archives:\n\n- Leading: 1.6x for comfortable reading\n- Measure: 45-75 characters per line\n- Hierarchy: Size, weight, and spacing\n- Serif for headings, sans for data",
+      "category": "Research",
+      "tags": ["typography", "design", "research"],
+      "favorite": false,
+      "createdAt": "2025-01-22",
+      "modifiedAt": "2025-01-22"
+    },
+    {
+      "code": "NODE-8K1P-R7M3",
+      "type": "link",
+      "title": "Internet Archive",
+      "url": "https://archive.org",
+      "description": "Digital library offering free access to books, movies, music, and preserved web pages.",
+      "notes": "Inspiration for the archive aesthetic.",
+      "category": "Reference",
+      "tags": ["archive", "library", "preservation"],
+      "favorite": true,
+      "createdAt": "2025-01-10",
+      "modifiedAt": "2025-01-15"
     }
   ]
 }

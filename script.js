@@ -39,21 +39,32 @@ function submitCode() {
     return;
   }
 
+  // === MASTER CODE → Full archive ===
   if (code === db.masterCode) {
     showValidation(true);
-    setTimeout(() => { hideValidation(); enterArchive(); }, 2200);
+    setTimeout(() => {
+      hideValidation();
+      enterArchive();
+    }, 2200);
     return;
   }
 
+  // === RESOURCE CODE → Only that artifact ===
   const resource = db.resources.find(r => r.code === code);
   if (resource) {
     showValidation(false);
-    setTimeout(() => { hideValidation(); enterArchive(); openDetail(resource); }, 2200);
+    setTimeout(() => {
+      hideValidation();
+      // Hide landing, show ONLY the detail view (not the archive!)
+      document.getElementById('landingPage').style.display = 'none';
+      openDetail(resource, true);
+    }, 2200);
     return;
   }
 
   document.getElementById('errorMsg').textContent = 'No record found for this code.';
 }
+
 
 // ===== VALIDATION =====
 function showValidation(isMaster) {
@@ -282,14 +293,18 @@ function openDetailByCode(code) {
   if (r) openDetail(r);
 }
 
-function openDetail(resource) {
+function openDetail(resource, fromLanding) {
   currentDetail = resource;
   const overlay = document.getElementById('detailOverlay');
   const card = document.getElementById('detailCard');
 
+  const backBtn = fromLanding
+    ? `<button class="detail-close" onclick="backToLanding()" style="top:16px;right:16px;position:absolute;background:none;border:none;color:#d4af37;cursor:pointer;font-size:0.8rem;letter-spacing:2px">← BACK TO ARCHIVE</button>`
+    : `<button class="detail-close" onclick="closeDetail()">✕</button>`;
+
   if (resource.type === 'link') {
     card.innerHTML = `
-      <button class="detail-close" onclick="closeDetail()">✕</button>
+      ${backBtn}
       <div class="detail-code">${esc(resource.code)}</div>
       <div class="detail-type link-type" style="color:#22c55e">⟐ LINK</div>
       <div class="detail-title">${esc(resource.title)}</div>
@@ -305,7 +320,7 @@ function openDetail(resource) {
     `;
   } else {
     card.innerHTML = `
-      <button class="detail-close" onclick="closeDetail()">✕</button>
+      ${backBtn}
       <div class="detail-code">${esc(resource.code)}</div>
       <div class="detail-type note-type" style="color:#3b82f6">⟐ NOTE</div>
       <div class="detail-title">${esc(resource.title)}</div>
@@ -320,6 +335,14 @@ function openDetail(resource) {
 
   overlay.classList.add('active');
 }
+
+function backToLanding() {
+  document.getElementById('detailOverlay').classList.remove('active');
+  document.getElementById('landingPage').style.display = 'flex';
+  document.getElementById('codeInput').value = '';
+  document.getElementById('codeInput').focus();
+}
+
 
 function closeDetail() {
   document.getElementById('detailOverlay').classList.remove('active');

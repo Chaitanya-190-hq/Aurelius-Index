@@ -1,77 +1,25 @@
+# 🏛️ Aurelius Index
+
+**Catalog. Preserve. Retrieve.**
+
+A private digital archive — a museum of knowledge where every saved link and note becomes a valuable artifact, locked behind unique archive codes.
 
 ---
 
-## 🚀 Quick Deploy
+## ✨ Features
 
-1. **Create a GitHub repo** (public or private — Pages needs public)
-2. **Upload these files:**
-   - `index.html`
-   - `db.json`
-   - `README.md`
-3. **Enable GitHub Pages:**
-   - Go to Settings → Pages
-   - Source: `Deploy from a branch`
-   - Branch: `main`, folder: `/ (root)`
-   - Click Save
-4. **Visit** `https://yourname.github.io/your-repo`
+- **Archive System** — Each artifact gets a `NODE-X7K2-9M1A` style code
+- **Private Access** — Enter a code to view an artifact; enter master code for admin
+- **Premium UI** — Dark luxury aesthetic, gold accents, serif typography
+- **Archive Views** — Grid, Timeline, Favorites
+- **Categories & Tags** — Organize and filter your collection
+- **Random Discovery** — "Discover" button reveals a forgotten artifact
+- **Admin Dashboard** — Full CRUD, export/import, statistics
 
----
+## 🚀 Deploy
 
-## 🔑 Default Codes
+1. Upload `index.html`, `style.css`, `script.js`, `db.json` to a GitHub repo
+2. Enable GitHub Pages (Settings → Pages → Deploy from `main`)
+3. Visit `yourname.github.io/your-repo`
 
-| Code | Type | Access |
-|------|------|--------|
-| `AURA-UNDEFINED-8*12` | Master | 🔓 Full admin |
-| `REF-7X9Q-K2M4` | Link | Sample link |
-| `ARC-3M8P-W5L2` | Note | Sample note |
-
-> **⚠️ Change the master code in `db.json` before pushing live!**
-
----
-
-## 🛠️ Usage
-
-### Viewing a Resource
-1. Go to your site
-2. Enter a resource code (e.g., `REF-7X9Q-K2M4`)
-3. The resource opens with all its content
-4. Share `yoursite.com/#CODE` with anyone
-
-### Managing Resources (Admin)
-1. Enter your **master code**
-2. The admin dashboard opens with stats and controls
-3. Add, edit, or delete resources
-4. Download the updated `db.json` and replace in your repo
-
-### Editing the Database
-You can also edit `db.json` directly in your GitHub repo:
-1. Go to your repo on GitHub.com
-2. Open `db.json`
-3. Click ✏️ Edit
-4. Make changes and Commit
-
----
-
-## 🔒 Privacy Notes
-
-- All data is stored in `db.json` — a static file on GitHub Pages
-- Anyone who knows the exact URL to `db.json` can download it
-- Resource codes provide **security through obscurity** — ideal for personal / shared reference content
-- Change your master code immediately after first deploy
-
----
-
-## 🧩 Optional Future Features
-
-- Encrypted database
-- QR codes for each resource
-- Markdown support in notes
-- Resource expiration dates
-- Favorites / pinned resources
-- Offline mode (service worker)
-
----
-
-## 📜 License
-
-MIT — Free to use, modify, and share.
+**Default Master Code:** `NODE-MSTR-KEY-001` (change before going live!)

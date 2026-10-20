@@ -787,18 +787,10 @@ function showResource(resource) {
 // ===== SHOW ADMIN =====
 function showAdmin() {
   currentView = 'admin';
-  hideAllViews();
   const av = document.getElementById('adminViewer');
   av.classList.add('active');
-  av.style.display = 'block';
-  void av.offsetWidth;
-  av.style.opacity = '0';
-  av.style.transform = 'translateY(10px)';
-  requestAnimationFrame(() => {
-    av.style.transition = 'opacity 0.45s ease, transform 0.45s ease';
-    av.style.opacity = '1';
-    av.style.transform = 'translateY(0)';
-  });
+  hideAllViews(); // hides landing immediately; fades out previous viewer if any
+  _showViewer(av);
   renderAdmin();
 }
 
@@ -1027,8 +1019,16 @@ function goBack() {
   if (window.location.hash) {
     history.pushState('', document.title, window.location.pathname);
   }
+  // hideAllViews fades out the current viewer (and immediately hides the landing
+  // page so it can be re-shown cleanly). Then we show the landing page with a
+  // scale+fade entrance.
   hideAllViews();
-  document.getElementById('landingPage').style.display = 'flex';
+  const lp = document.getElementById('landingPage');
+  lp.style.display = 'flex';
+  // Re-trigger the landing entrance animation (it only runs on first render).
+  lp.style.animation = 'none';
+  void lp.offsetWidth;
+  lp.style.animation = '';
   currentView = 'landing';
   document.getElementById('codeInput').value = '';
   document.getElementById('codeInput').focus();
@@ -1231,7 +1231,6 @@ const _origShowResource = showResource;
 showResource = function(resource) {
   currentView = 'resource';
   currentResource = resource;
-  hideAllViews();
   document.getElementById('viewerCode').textContent = resource.code;
 
   // Reset QR tabs to Details
@@ -1241,17 +1240,6 @@ showResource = function(resource) {
   document.getElementById('qrPanelDetails').classList.add('active');
 
   const card = document.getElementById('resourceCard');
-  const viewer = document.getElementById('resourceViewer');
-  viewer.classList.add('active');
-  viewer.style.display = 'block';
-  void viewer.offsetWidth;
-  viewer.style.opacity = '0';
-  viewer.style.transform = 'translateY(10px)';
-  requestAnimationFrame(() => {
-    viewer.style.transition = 'opacity 0.45s ease, transform 0.45s ease';
-    viewer.style.opacity = '1';
-    viewer.style.transform = 'translateY(0)';
-  });
 
   if (resource.type === 'link') {
     card.innerHTML = `
@@ -1288,6 +1276,12 @@ showResource = function(resource) {
   } else {
     showResourceQR(resource);
   }
+
+  // Now show the viewer (hides landing + any stale fade-out timer, then fades in).
+  const viewer = document.getElementById('resourceViewer');
+  viewer.classList.add('active');
+  hideAllViews(); // hides landing immediately; fades out previous viewer if any
+  _showViewer(viewer);
 };
 
 // ===== AMBIENT PARTICLES =====
@@ -1414,44 +1408,68 @@ showResource = function(resource) {
 })();
 
 // ===== VIEW TRANSITIONS =====
-// Fade/slide in for the resource and admin viewers on show.
-const _hideAllViewsOrig = hideAllViews;
+// Show/hide the resource & admin viewers.
+//
+// CORRECTNESS FIX: the previous code scheduled a setTimeout in hideAllViews() to
+// hide the viewer ~250ms after it ran. But showResource/showAdmin call hideAllViews()
+// and then immediately show the viewer again, so the viewer was hidden shortly after
+// fading in — making every article appear and then disappear. The user could not access
+// any article.
+//
+// Fix: hideAllViews() now hides immediately (no setTimeout). The only animation is a
+// fade-IN when a viewer is shown. This guarantees the viewer stays visible after it is
+// shown. We also hide the landing page immediately (not via timer) when entering a
+// viewer, and re-trigger the landing entrance animation when going back.
+var _viewRaf = 0;
+
+function _cancelViewRaf() {
+  if (_viewRaf) { cancelAnimationFrame(_viewRaf); _viewRaf = 0; }
+}
+
+function _hideViewer(el) {
+  if (!el) return;
+  el.classList.remove('active');
+  el.style.display = 'none';
+  el.style.opacity = '';
+  el.style.transform = '';
+  el.style.transition = '';
+}
+
 hideAllViews = function() {
-  const rl = document.getElementById('resourceViewer');
-  const al = document.getElementById('adminViewer');
-  if (rl) rl.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
-  if (al) al.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
-  if (rl) { rl.style.opacity = '0'; rl.style.transform = 'translateY(8px)'; }
-  if (al) { al.style.opacity = '0'; al.style.transform = 'translateY(8px)'; }
-  setTimeout(() => {
-    const r = document.getElementById('resourceViewer');
-    const a = document.getElementById('adminViewer');
-    if (r) r.classList.remove('active');
-    if (a) a.classList.remove('active');
-    if (r) r.style.display = 'none';
-    if (a) a.style.display = 'none';
-    const lp = document.getElementById('landingPage');
-    if (lp) lp.style.display = 'none';
-  }, 250);
+  _cancelViewRaf();
+  var rl = document.getElementById('resourceViewer');
+  var al = document.getElementById('adminViewer');
+  var lp = document.getElementById('landingPage');
+  // Hide the landing page immediately when we move to a viewer (it is the fallback
+  // screen). This is instant — no timer — so the landing never lingers or reappears.
+  if (lp) lp.style.display = 'none';
+  _hideViewer(rl);
+  _hideViewer(al);
 };
 
-const _showResourceOrig = showResource;
-// showResource is already replaced further down; augment its entrance.
-const _origEntrance = window._showResourceEntrance || function(){};
-
-function fadeInViewer(el) {
+function _fadeIn(el) {
   if (!el) return;
+  el.classList.add('active');
   el.style.display = 'block';
-  // force reflow
+  // Force reflow so opacity-0 + transform take effect before the transition starts.
   void el.offsetWidth;
+  el.style.transition = 'none';
   el.style.opacity = '0';
   el.style.transform = 'translateY(10px)';
-  requestAnimationFrame(() => {
+  _viewRaf = requestAnimationFrame(function() {
     el.style.transition = 'opacity 0.45s ease, transform 0.45s ease';
     el.style.opacity = '1';
     el.style.transform = 'translateY(0)';
+    _viewRaf = 0;
   });
 }
+
+function _showViewer(viewer) {
+  _cancelViewRaf();
+  _fadeIn(viewer);
+}
+
+// ===== START =====
 
 // ===== START =====
 init();

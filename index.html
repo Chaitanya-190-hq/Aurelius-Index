@@ -39,14 +39,14 @@ body {
   background: rgba(255,255,255,0.04);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 20px;
-  padding: 40px;
+  border: 1px solid rgba(255,255,255,0.08);  border-radius: 20px; padding: 40px;
   max-width: 480px;
   width: 90%;
   margin: 0 auto;
 }
-
+</style>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
 /* ===== CENTER CONTAINER ===== */
 .center-screen {
   display: flex; align-items: center; justify-content: center;
@@ -184,6 +184,48 @@ body {
   text-decoration: none; cursor: pointer; transition: transform 0.2s;
 }
 .open-btn:hover { transform: translateY(-2px); }
+
+/* ===== QR CODES ===== */
+.qr-tab-bar {
+  display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.qr-tab {
+  padding: 6px 14px; font-size: 0.75rem; letter-spacing: 1px;
+  border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.03); color: #888;
+  cursor: pointer; transition: all 0.2s;
+}
+.qr-tab.active {
+  background: rgba(201,168,76,0.15); color: #c9a84c; border-color: rgba(201,168,76,0.4);
+}
+.qr-tab:hover { border-color: rgba(201,168,76,0.4); }
+.qr-panel { display: none; }
+.qr-panel.active { display: block; }
+.qr-wrap {
+  display: flex; flex-direction: column; align-items: center;
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px; padding: 24px; margin-bottom: 16px;
+}
+.qr-wrap canvas, .qr-wrap img { max-width: 200px; height: auto; }
+.qr-label {
+  margin-top: 10px; font-size: 0.8rem; color: #666; letter-spacing: 1px;
+  word-break: break-all; text-align: center;
+}
+.qr-url-editable {
+  margin-top: 8px; width: 100%; max-width: 360px;
+  padding: 6px 10px; background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+  color: #c9a84c; font-size: 0.7rem; letter-spacing: 0.5px;
+  text-align: center; outline: none;
+}
+.qr-url-editable:focus { border-color: #c9a84c; }
+.qr-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px; margin-top: 12px;
+}
+.no-qr-hint {
+  color: #555; font-size: 0.8rem; text-align: center; padding: 16px;
+}
 
 /* ===== ADMIN DASHBOARD ===== */
 .admin-viewer {
@@ -333,6 +375,21 @@ body {
     <span class="code-badge" id="viewerCode"></span>
   </div>
   <div class="resource-card" id="resourceCard"></div>
+
+  <!-- ===== QR TAB BAR ===== -->
+  <div class="qr-tab-bar" id="qrTabBar">
+    <button class="qr-tab active" data-qr-panel="details">Details</button>
+    <button class="qr-tab" data-qr-panel="qr">QR Code</button>
+  </div>
+
+  <!-- ===== DETAILS PANEL ===== -->
+  <div class="qr-panel active" id="qrPanelDetails"></div>
+
+  <!-- ===== QR PANEL ===== -->
+  <div class="qr-panel" id="qrPanelQr">
+    <div id="qrContainer"></div>
+    <div class="no-qr-hint" id="qrHint"></div>
+  </div>
 </div>
 
 <!-- ===== ADMIN VIEWER ===== -->
@@ -351,9 +408,13 @@ body {
     <button class="btn-sm" onclick="document.getElementById('importInput').click()">⬆ Import</button>
     <input type="file" id="importInput" accept=".json" style="display:none" onchange="importDB(event)">
     <button class="btn-sm danger" onclick="if(confirm('Remove ALL data?')){clearAll()}">✕ Clear All</button>
+    <button class="btn-sm primary" onclick="renderQRTab()">⊞ QR Codes</button>
   </div>
 
   <div class="resource-list" id="resourceList"></div>
+
+  <!-- ===== QR GRID (ADMIN) ===== -->
+  <div class="qr-grid" id="qrGrid" style="display:none"></div>
 </div>
 
 <script>
@@ -803,6 +864,188 @@ document.addEventListener('keydown', (e) => {
     }
   }
 });
+
+// ===== QR CODES =====
+
+function getResourceBaseUrl() {
+  const loc = window.location;
+  // Use origin+pathname so the QR encodes a shareable URL.
+  // Guard against file:// and empty origins (local file open).
+  if (!loc.origin || loc.origin === 'null' || loc.protocol === 'file:') {
+    return null;
+  }
+  return loc.origin + loc.pathname;
+}
+
+function resourceShareUrl(resource, overrideBase) {
+  const base = overrideBase || getResourceBaseUrl();
+  if (!base) return null;
+  return base + '#' + resource.code;
+}
+
+function renderQR(elementId, url, size) {
+  const container = document.getElementById(elementId);
+  if (!container) return;
+  // Clear previous
+  container.innerHTML = '';
+  if (!url) {
+    container.innerHTML = '<div class="no-qr-hint">Set a base URL above to generate the QR.</div>';
+    return;
+  }
+  try {
+    new QRCode(container, {
+      text: url,
+      width: size || 200,
+      height: size || 200,
+      colorDark: '#c9a84c',
+      colorLight: '#0a0a1a',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  } catch(e) {
+    container.innerHTML = '<div class="no-qr-hint">QR library unavailable.</div>';
+  }
+}
+
+function showResourceQR(resource, overrideBase) {
+  const url = resourceShareUrl(resource, overrideBase);
+  const container = document.getElementById('qrContainer');
+  const hint = document.getElementById('qrHint');
+  container.innerHTML = '';
+  if (!url) {
+    container.innerHTML = '';
+    hint.textContent = 'This page is open from a local file. Deploy the site (e.g. GitHub Pages) and reopen to generate QR codes that link back to it. Alternatively, enter your deployed URL in the admin QR Codes view.';
+    return;
+  }
+  hint.textContent = '';
+  renderQR('qrContainer', url, 200);
+}
+
+function resourceStoredUrl(resource) {
+  // Allow per-resource custom URL stored on the resource (e.g. your deployed domain).
+  return (resource.qrUrl && resource.qrUrl.trim()) || null;
+}
+
+function renderQRTab() {
+  const grid = document.getElementById('qrGrid');
+  grid.style.display = 'grid';
+  grid.innerHTML = db.resources.map(r => {
+    const url = resourceStoredUrl(r) || resourceShareUrl(r);
+    return `
+      <div class="qr-wrap">
+        <div id="qr-${esc(r.code)}"></div>
+        <div class="qr-label">${esc(r.code)} — ${esc(r.title)}</div>
+        <input class="qr-url-editable" id="qrurl-${esc(r.code)}"
+          value="${esc(url || '')}"
+          placeholder="deployed URL#${esc(r.code)}"
+          onchange="updateResourceQRUrl('${esc(r.code)}', this.value)"
+        >
+      </div>
+    `;
+  }).join('');
+
+  // Render each QR after DOM insertion
+  db.resources.forEach(r => {
+    const url = resourceStoredUrl(r) || resourceShareUrl(r);
+    renderQR('qr-' + esc(r.code), url, 180);
+  });
+
+  toast('QR codes ready — right-click any to save, or paste this page into your notes.');
+}
+
+function updateResourceQRUrl(code, val) {
+  const r = db.resources.find(x => x.code === code);
+  if (!r) return;
+  r.qrUrl = val.trim() || null;
+  // Re-render this QR
+  const url = resourceStoredUrl(r) || resourceShareUrl(r);
+  renderQR('qr-' + code, url, 180);
+  // Also refresh the viewer-side QR if currently viewing this resource
+  if (currentResource && currentResource.code === code) {
+    showResourceQR(r);
+  }
+  saveDBLocal();
+}
+
+function saveDBLocal() {
+  // Persist in-memory changes to db.json via a blob download prompt,
+  // since we cannot write to the static file from the browser.
+  // The admin can use Export to get the updated file.
+  try {
+    const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'db.json';
+    a.click();
+  } catch(e) { /* ignore */ }
+}
+
+// ===== QR TAB SWITCHING (resource viewer) =====
+document.addEventListener('click', (e) => {
+  const tab = e.target.closest('.qr-tab');
+  if (!tab) return;
+  const panelId = tab.getAttribute('data-qr-panel');
+  document.querySelectorAll('.qr-tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  document.querySelectorAll('.qr-panel').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById('qrPanel' + (panelId === 'details' ? 'Details' : 'Qr'));
+  if (panel) panel.classList.add('active');
+  if (panelId === 'qr') {
+    if (currentResource) showResourceQR(currentResource);
+  }
+});
+
+// ===== UPDATE showResource to fill the details + QR panels =====
+const _origShowResource = showResource;
+showResource = function(resource) {
+  currentView = 'resource';
+  currentResource = resource;
+  hideAllViews();
+  document.getElementById('resourceViewer').classList.add('active');
+  document.getElementById('viewerCode').textContent = resource.code;
+
+  // Reset QR tabs to Details
+  document.querySelectorAll('.qr-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('.qr-tab[data-qr-panel="details"]').classList.add('active');
+  document.querySelectorAll('.qr-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('qrPanelDetails').classList.add('active');
+
+  const card = document.getElementById('resourceCard');
+
+  if (resource.type === 'link') {
+    card.innerHTML = `
+      <span class="resource-type-badge type-link">⟐ LINK</span>
+      <div class="resource-title">${esc(resource.title)}</div>
+      <a class="resource-url" href="${esc(resource.url)}" target="_blank">${esc(resource.url)}</a>
+      ${resource.description ? `<div class="resource-desc">${esc(resource.description)}</div>` : ''}
+      ${resource.notes ? `<div class="resource-notes">${esc(resource.notes)}</div>` : ''}
+      <a class="open-btn" href="${esc(resource.url)}" target="_blank">Open Resource</a>
+      <div class="resource-meta">
+        <span>Created: ${resource.createdAt}</span>
+        <span>Modified: ${resource.modifiedAt}</span>
+      </div>
+    `;
+  } else {
+    card.innerHTML = `
+      <span class="resource-type-badge type-note">⟐ NOTE</span>
+      <div class="resource-title">${esc(resource.title)}</div>
+      <div class="resource-content">${esc(resource.content)}</div>
+      <div class="resource-meta">
+        <span>Created: ${resource.createdAt}</span>
+        <span>Modified: ${resource.modifiedAt}</span>
+      </div>
+    `;
+  }
+
+  // Populate details panel (reuses card content)
+  document.getElementById('qrPanelDetails').innerHTML = card.innerHTML;
+
+  // Pre-render QR using stored URL if available
+  if (resource.qrUrl) {
+    showResourceQR(resource, resource.qrUrl);
+  } else {
+    showResourceQR(resource);
+  }
+};
 
 // ===== START =====
 init();

@@ -64,11 +64,30 @@ You can also edit `db.json` directly in your GitHub repo:
 ## 🧩 Optional Future Features
 
 - Encrypted database
-- QR codes for each resource
 - Markdown support in notes
 - Resource expiration dates
 - Favorites / pinned resources
 - Offline mode (service worker)
+
+---
+
+## QR Codes
+
+Each resource now has a scannable QR code that encodes its direct share URL (`yoursite/#CODE`). Anyone who scans it is taken straight to that resource's viewer page.
+
+### View a single resource's QR
+1. Open the resource normally (enter its code on the landing page).
+2. Below the resource card, switch to the **QR Code** tab.
+3. Scan with your phone, or right-click the QR and save it as an image to paste into your notes.
+
+### Generate QRs for all resources at once
+1. Enter the master code to open the admin dashboard.
+2. Click **⊞ QR Codes** in the admin actions bar.
+3. A grid of QR codes appears — one per resource.
+4. Under each QR you can type a custom base URL if your site is deployed to a specific domain (e.g. `https://yourname.github.io/your-repo`). The QR updates automatically.
+5. Right-click any QR to save it, then drop the image into your digital notes.
+
+> **Note:** QR codes encode a URL like `https://yourdomain.com/#REF-7X9Q-K2M4`. If you open `index.html` from a local file (`file://...`), the QR view will show a hint instead of generating codes — deploy the site or enter your deployed URL in the admin QR view.
 
 ---
 
